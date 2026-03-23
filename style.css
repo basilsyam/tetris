@@ -382,9 +382,13 @@ canvas { display: block; }
     .mobile-controls { display: flex; }
     .mobile-top-bar { display: flex; }
     
+    .game-wrapper {
+        align-items: flex-start;
+        padding-top: 10px;
+    }
     canvas#tetris, canvas#particles {
         max-width: 100%;
-        height: auto;
-        aspect-ratio: 1 / 2;
+        height: 55vh;
+        width: auto;
     }
 }

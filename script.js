@@ -556,10 +556,12 @@ document.addEventListener('keydown', event => {
 function addControl(id, action) {
     const btn = document.getElementById(id);
     if (!btn) return;
-    btn.addEventListener('pointerdown', (e) => {
+    const handler = (e) => {
         e.preventDefault();
         if(!isPaused && !isGameOver) action();
-    });
+    };
+    btn.addEventListener('touchstart', handler, {passive: false});
+    btn.addEventListener('mousedown', handler);
 }
 addControl('btn-left', () => playerMove(-1));
 addControl('btn-right', () => playerMove(1));
@@ -568,9 +570,10 @@ addControl('btn-rotate', () => playerRotate(1));
 addControl('btn-drop', () => hardDrop());
 addControl('btn-hold', () => holdPiece());
 
-// Prevent scrolling on mobile when swiping canvas or buttons
-document.addEventListener('touchmove', function(e) {
-    if(!startScreen.classList.contains('visible') && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT') {
+// Prevent scrolling ONLY when touching the game canvas directly
+const canvasCont = document.getElementById('canvas-container');
+if (canvasCont) {
+    canvasCont.addEventListener('touchmove', (e) => {
         e.preventDefault();
-    }
-}, { passive: false });
+    }, { passive: false });
+}
