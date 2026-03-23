@@ -379,8 +379,8 @@ canvas { display: block; }
     .controls-guide { display: none; }
     
     .center-panel { order: 1; width: 100%; max-width: 400px; }
-    .mobile-controls { display: flex; }
-    .mobile-top-bar { display: flex; }
+    .mobile-controls { display: flex !important; }
+    .mobile-top-bar { display: flex !important; }
     
     .game-wrapper {
         align-items: flex-start;
