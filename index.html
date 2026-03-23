@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tetris Pro - تتريس الاحترافية</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="theme-neon" id="body-theme">
+    
+    <!-- Start Screen Overlay -->
+    <div id="start-screen" class="overlay glass-panel visible">
+        <h1 class="logo">تتريس</h1>
+        <p class="subtitle">النسخة الاحترافية المكتملة</p>
+        
+        <div class="settings-group">
+            <label>مستوى البداية:</label>
+            <input type="number" id="start-level" min="1" max="20" value="1">
+        </div>
+        
+        <div class="settings-group">
+            <label>المظهر (Theme):</label>
+            <select id="theme-select">
+                <option value="theme-neon">نيون ليلي (Neon)</option>
+                <option value="theme-retro">جيم بوي كلاسيك (Retro)</option>
+                <option value="theme-light">وضع النهار (Light)</option>
+            </select>
+        </div>
+        
+        <div class="settings-group">
+            <label>التأثيرات الصوتية 🔊:</label>
+            <button id="toggle-sound-btn" class="toggle-btn">مفعل</button>
+        </div>
+
+        <button id="main-start-btn" class="glow-on-hover btn-large">بدء اللعب</button>
+    </div>
+
+    <!-- Pause / Game Over Screen -->
+    <div id="status-screen" class="overlay glass-panel hidden">
+        <h2 id="status-title">إيقاف مؤقت ⏸️</h2>
+        <h3 id="final-score-display" class="hidden" style="margin:15px;color:#00ffcc">النقاط: <span id="final-score">0</span></h3>
+        <button id="resume-btn" class="glow-on-hover" style="margin-top:20px;">متابعة اللعب</button>
+        <button id="restart-btn" class="glow-on-hover hidden" style="margin-top:20px;">إعادة اللعب</button>
+        <button id="quit-btn" class="glow-on-hover btn-danger" style="margin-top:10px;">العودة للرئيسية</button>
+    </div>
+
+    <!-- Main Game UI -->
+    <div class="game-wrapper hidden" id="game-wrapper">
+        <div class="game-container">
+            <div class="glass-panel left-panel">
+                <div class="panel-header">تتريس</div>
+                <div class="info-box top-score-box">
+                    <p>أعلى نقطة 🏆</p>
+                    <span id="high-score">0</span>
+                </div>
+                <div class="info-box">
+                    <p>النقاط</p>
+                    <span id="score">0</span>
+                </div>
+                <div class="info-box">
+                    <p>المستوى</p>
+                    <span id="level">1</span>
+                </div>
+                <div class="info-box">
+                    <p>الخطوط</p>
+                    <span id="lines">0</span>
+                </div>
+                <button id="pause-btn" class="glow-on-hover pause-action" style="margin-top: 20px;">⏸️ إيقاف (P)</button>
+            </div>
+            
+            <div class="center-panel">
+                <div class="mobile-top-bar">
+                    <span class="mobile-score">🎯 النقاط: <span id="m-score">0</span></span>
+                    <button id="m-pause-btn" class="icon-btn pause-action">⏸️</button>
+                </div>
+
+                <div class="canvas-container" id="canvas-container">
+                    <canvas id="tetris" width="300" height="600"></canvas>
+                    <canvas id="particles" width="300" height="600"></canvas>
+                </div>
+                
+                <div class="mobile-controls">
+                    <div class="controls-row">
+                        <button id="btn-hold">📦 احتفظ</button>
+                        <button id="btn-drop">⏬ مسافة</button>
+                    </div>
+                    <div class="controls-row">
+                        <button id="btn-rotate">🔄 تدوير</button>
+                        <button id="btn-down">🔽 أسفل</button>
+                    </div>
+                    <div class="controls-row">
+                        <button id="btn-right">➡️ يمين</button>
+                        <button id="btn-left">⬅️ يسار</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel right-panel">
+                <h2>الاحتفاظ (Hold)</h2>
+                <div class="next-piece-container hold-piece-container">
+                    <canvas id="hold-piece" width="120" height="120"></canvas>
+                </div>
+
+                <h2>الأشكال القادمة</h2>
+                <div class="next-piece-container queue-container">
+                    <canvas id="next-queue" width="120" height="280"></canvas>
+                </div>
+                <div class="controls-guide">
+                    <p>⬆️ أو 🔄 تدوير</p>
+                    <p>⬇️ تسريع السقوط</p>
+                    <p>⬅️ ➡️ يمين/يسار</p>
+                    <p>المسافة (Space) اسقاط</p>
+                    <p>(C) احتفاظ بالشكل</p>
+                    <p>(P) إيقاف اللعبة</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
