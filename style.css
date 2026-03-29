@@ -15,37 +15,77 @@ body {
     overflow: auto;
     padding: 10px;
     transition: background 0.5s ease, color 0.5s ease;
+    background: var(--bg-gradient);
+    color: var(--text-main);
 }
 
 /* THEMES CONFIGURATION */
-body.theme-neon {
-    background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
-    color: #fff;
+:root {
+    --bg-gradient: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
+    --text-main: #fff;
     --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.1);
     --text-highlight: #00ffcc;
     --canvas-bg: rgba(0, 0, 0, 0.5);
     --hover-bg: linear-gradient(45deg, #ff00cc, #3333ff, #00ffcc, #ff00cc);
+    
+    --danger-bg: #ff3333;
+    --danger-hover-bg: linear-gradient(45deg, #ff3333, #aa0000);
+    --panel-bg: rgba(0, 0, 0, 0.1);
+    --select-bg: #1a1a2e;
+    --select-text: #fff;
+    
+    --mobile-btn-bg: rgba(0, 0, 0, 0.2);
+    --mobile-btn-border: var(--glass-border);
+    --mobile-btn-active: rgba(128, 128, 128, 0.5);
+    
+    --btn-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    --btn-text: #fff;
+    --btn-border: none;
 }
 
+
+
 body.theme-light {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    color: #333;
+    --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --text-main: #333;
     --glass-bg: rgba(255, 255, 255, 0.5);
     --glass-border: rgba(0, 0, 0, 0.1);
     --text-highlight: #0066cc;
     --canvas-bg: rgba(255, 255, 255, 0.8);
     --hover-bg: linear-gradient(45deg, #0066cc, #00ccff);
+    
+    --danger-bg: #e60000;
+    --danger-hover-bg: #cc0000;
+    --select-bg: #fff;
+    --select-text: #333;
+    
+    --mobile-btn-bg: rgba(255, 255, 255, 0.5);
+    --mobile-btn-border: rgba(0,0,0,0.2);
 }
 
 body.theme-retro {
-    background: #8b956d; /* Gameboy green */
-    color: #0f380f;
+    --bg-gradient: #8b956d;
+    --text-main: #0f380f;
     --glass-bg: rgba(15, 56, 15, 0.1);
     --glass-border: #0f380f;
     --text-highlight: #0f380f;
     --canvas-bg: #9bbc0f;
     --hover-bg: #0f380f;
+    
+    --danger-bg: #0f380f;
+    --danger-hover-bg: #0f380f;
+    --panel-bg: rgba(15, 56, 15, 0.15);
+    --select-bg: #8b956d;
+    --select-text: #0f380f;
+    
+    --mobile-btn-bg: rgba(15, 56, 15, 0.2);
+    --mobile-btn-border: #0f380f;
+    --mobile-btn-active: rgba(15, 56, 15, 0.5);
+    
+    --btn-shadow: none;
+    --btn-text: #9bbc0f;
+    --btn-border: 2px solid #0f380f;
 }
 
 /* OVERLAYS AND SCREENS */
@@ -96,11 +136,9 @@ body.theme-retro {
     outline: none;
 }
 .settings-group option {
-    background: #1a1a2e; /* Support for native select drop-down styling fallback */
-    color: #fff;
+    background: var(--select-bg);
+    color: var(--select-text);
 }
-.theme-light .settings-group option { background: #fff; color: #333; }
-.theme-retro .settings-group option { background: #8b956d; color: #0f380f; }
 
 .toggle-btn {
     width: 100%;
@@ -121,10 +159,14 @@ body.theme-retro {
     margin-top: 10px;
 }
 .btn-danger {
-    background: #ff3333 !important;
+    background: var(--danger-bg) !important;
     animation: none !important;
+    color: var(--text-main);
+    border: var(--btn-border);
 }
-.theme-neon .btn-danger { background: linear-gradient(45deg, #ff3333, #aa0000) !important; }
+.btn-danger:hover {
+    background: var(--danger-hover-bg) !important;
+}
 
 /* MAIN PANELS */
 .game-wrapper {
@@ -171,7 +213,7 @@ body.theme-retro {
 }
 
 .info-box {
-    background: rgba(0, 0, 0, 0.1);
+    background: var(--panel-bg);
     border-radius: 10px;
     padding: 10px 20px;
     margin-bottom: 15px;
@@ -237,7 +279,7 @@ body.theme-retro {
 canvas { display: block; }
 
 .next-piece-container {
-    background: rgba(0, 0, 0, 0.1);
+    background: var(--panel-bg);
     border-radius: 10px;
     padding: 10px;
     border: 1px solid var(--glass-border);
@@ -248,9 +290,9 @@ canvas { display: block; }
 .glow-on-hover {
     width: 100%;
     padding: 15px;
-    border: none;
+    border: var(--btn-border);
     outline: none;
-    color: #fff;
+    color: var(--btn-text);
     background: var(--hover-bg);
     background-size: 400%;
     border-radius: 10px;
@@ -260,11 +302,10 @@ canvas { display: block; }
     position: relative;
     z-index: 0;
     transition: 0.3s ease;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    text-shadow: var(--btn-shadow);
 }
 
 .theme-neon .glow-on-hover { animation: glowing 20s linear infinite; }
-.theme-retro .glow-on-hover { color: #9bbc0f; border: 2px solid #0f380f; background: #0f380f; text-shadow: none; }
 @keyframes glowing {
     0% { background-position: 0 0; }
     50% { background-position: 400% 0; }
@@ -280,7 +321,7 @@ canvas { display: block; }
 
 .controls-guide {
     margin-top: 20px;
-    background: rgba(0, 0, 0, 0.1);
+    background: var(--panel-bg);
     padding: 15px;
     border-radius: 10px;
     width: 100%;
@@ -310,8 +351,8 @@ canvas { display: block; }
     justify-content: space-between;
 }
 .mobile-controls button {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--glass-border);
+    background: var(--mobile-btn-bg);
+    border: 1px solid var(--mobile-btn-border);
     color: inherit;
     font-size: 1.1rem;
     padding: 15px 10px;
@@ -321,10 +362,8 @@ canvas { display: block; }
     font-weight: bold;
     user-select: none;
 }
-.theme-retro .mobile-controls button { background: rgba(15, 56, 15, 0.2); }
-.theme-light .mobile-controls button { background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(0,0,0,0.2) }
 
-.mobile-controls button:active { background: rgba(128, 128, 128, 0.5); transform: scale(0.95); }
+.mobile-controls button:active { background: var(--mobile-btn-active); transform: scale(0.95); }
 
 .mobile-top-bar {
     display: none;
@@ -393,4 +432,31 @@ canvas { display: block; }
         height: auto;
         aspect-ratio: 1 / 2;
     }
+}
+
+/* ADDING VISUAL EFFECTS */
+.floating-text {
+    position: absolute;
+    font-size: 2rem;
+    font-weight: bold;
+    text-shadow: 0 0 10px currentColor;
+    pointer-events: none;
+    animation: floatUp 1.5s ease-out forwards;
+    z-index: 100;
+}
+
+@keyframes floatUp {
+    0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+    20% { transform: translate(-50%, -20px) scale(1.2); opacity: 1; }
+    80% { transform: translate(-50%, -60px) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -80px) scale(1); opacity: 0; }
+}
+
+.flash {
+    animation: flashEffect 0.15s ease-out;
+}
+@keyframes flashEffect {
+    0% { filter: brightness(1) invert(0); }
+    50% { filter: brightness(2) invert(0.8); }
+    100% { filter: brightness(1) invert(0); }
 }

@@ -137,6 +137,8 @@ let holdPieceMatrix = null;
 let canHold = true;
 let dropCounter = 0;
 let dropInterval = 1000;
+let lockDelayCounter = 0; // NEW: Lock Delay State
+const LOCK_DELAY = 500;   // NEW: Lock Delay Duration ms
 let lastTime = 0;
 let animationId = null;
 let isGameOver = false;
@@ -267,20 +269,29 @@ function drawHoldPiece() {
 }
 
 /* === GAME LOGIC === */
-function getRandomPiece() {
-    const index = Math.floor(Math.random() * (SHAPES.length - 1)) + 1;
+let bag = [];
+function get7BagPiece() {
+    if (bag.length === 0) {
+        bag = [1, 2, 3, 4, 5, 6, 7];
+        for (let i = bag.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [bag[i], bag[j]] = [bag[j], bag[i]];
+        }
+    }
+    const index = bag.pop();
     return JSON.parse(JSON.stringify(SHAPES[index]));
 }
 
 function initQueue() {
     pieceQueue = [];
-    while(pieceQueue.length < 3) pieceQueue.push(getRandomPiece());
+    bag = []; // Reset bag on init
+    while(pieceQueue.length < 3) pieceQueue.push(get7BagPiece());
 }
 
 function playerReset() {
     if(pieceQueue.length === 0) initQueue();
     player.matrix = pieceQueue.shift();
-    pieceQueue.push(getRandomPiece());
+    pieceQueue.push(get7BagPiece());
     drawQueue();
     
     player.pos.y = 0;
@@ -332,6 +343,19 @@ function arenaSweep() {
         player.score += points[rowCount] * player.level;
         player.lines += rowCount;
         
+        let message = '';
+        let color = '#fff';
+        if (rowCount === 1) { message = 'Single!'; color = '#0DC2FF'; }
+        if (rowCount === 2) { message = 'Double!'; color = '#0DFF72'; }
+        if (rowCount === 3) { message = 'Triple!'; color = '#F538FF'; }
+        if (rowCount === 4) { 
+            message = 'TETRIS!'; 
+            color = '#FF0D72';
+            canvasContainer.classList.add('flash');
+            setTimeout(() => canvasContainer.classList.remove('flash'), 150);
+        }
+        showFloatingText(message, color);
+        
         // Calculate dynamic level based on starting level
         const startLvl = parseInt(startLevelInput.value) || 1;
         player.level = startLvl + Math.floor(player.lines / 10);
@@ -343,28 +367,38 @@ function arenaSweep() {
     }
 }
 
-function playerDrop() {
+function playerDrop(isSoftDrop = false) {
     if (isPaused || isGameOver) return;
     player.pos.y++;
     if (collide(board, player)) {
         player.pos.y--;
-        merge(board, player);
-        arenaSweep();
-        playerReset();
+    } else {
+        if (isSoftDrop) {
+            player.score += 1;
+            updateScore();
+        }
     }
     dropCounter = 0;
 }
 
 function hardDrop() {
     if (isPaused || isGameOver) return;
+    let distance = 0;
     while (!collide(board, player)) {
         player.pos.y++;
+        distance++;
     }
+    distance--;
     player.pos.y--;
+    if (distance > 0) {
+        player.score += distance * 2;
+        updateScore();
+    }
     merge(board, player);
     arenaSweep();
     playerReset();
     dropCounter = 0;
+    lockDelayCounter = 0;
     draw(); // Draw immediately so player sees it drop before next frame
 }
 
@@ -375,6 +409,7 @@ function playerMove(dir) {
         player.pos.x -= dir;
     } else {
         playSound('move');
+        lockDelayCounter = 0;
     }
 }
 
@@ -385,20 +420,31 @@ function rotate(matrix, dir) {
 
 function playerRotate(dir) {
     if (isPaused || isGameOver) return;
-    const pos = player.pos.x;
-    let offset = 1;
+    const originalPos = { x: player.pos.x, y: player.pos.y };
     player.matrix = rotate(player.matrix, dir);
-    // Wall kick
-    while (collide(board, player)) {
-        player.pos.x += offset;
-        offset = -(offset + (offset > 0 ? 1 : -1));
-        if (offset > player.matrix[0].length) {
-            player.matrix = rotate(player.matrix, -dir); // Revert
-            player.pos.x = pos;
-            return;
+    
+    // SRS-like wall kicks
+    const offsets = [
+        [0, 0], [-1, 0], [1, 0], [0, -1], [-1, -1], [1, -1], [0, -2]
+    ];
+    
+    let valid = false;
+    for (let offset of offsets) {
+        player.pos.x = originalPos.x + offset[0];
+        player.pos.y = originalPos.y + offset[1];
+        if (!collide(board, player)) {
+            valid = true;
+            break;
         }
     }
+    if (!valid) {
+        player.matrix = rotate(player.matrix, -dir); // Revert
+        player.pos.x = originalPos.x;
+        player.pos.y = originalPos.y;
+        return;
+    }
     playSound('move');
+    lockDelayCounter = 0;
 }
 
 function holdPiece() {
@@ -440,6 +486,21 @@ function triggerGameOver() {
     cancelAnimationFrame(animationId);
 }
 
+function showFloatingText(text, color = '#fff') {
+    const container = document.getElementById('floating-text-container');
+    if (!container) return;
+    const el = document.createElement('div');
+    el.innerText = text;
+    el.className = 'floating-text';
+    el.style.color = color;
+    const boardRect = canvas.getBoundingClientRect();
+    const contRect = container.getBoundingClientRect();
+    el.style.left = (boardRect.left - contRect.left + boardRect.width / 2) + 'px';
+    el.style.top = (boardRect.top - contRect.top + boardRect.height / 2 - 50) + 'px';
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+}
+
 function updateScore() {
     scoreElement.innerText = player.score;
     mScoreElement.innerText = player.score;
@@ -452,6 +513,25 @@ function update(time = 0) {
     
     const deltaTime = time - lastTime;
     lastTime = time;
+
+    // Check lock delay
+    player.pos.y++;
+    if (collide(board, player)) {
+        lockDelayCounter += deltaTime;
+        if (lockDelayCounter >= LOCK_DELAY) {
+            player.pos.y--; // Restore
+            merge(board, player);
+            arenaSweep();
+            playerReset();
+            lockDelayCounter = 0;
+            dropCounter = 0;
+        } else {
+            player.pos.y--; // Restore
+        }
+    } else {
+        lockDelayCounter = 0; // Reset if falling freely
+        player.pos.y--; // Restore
+    }
 
     dropCounter += deltaTime;
     if (dropCounter > dropInterval) {
@@ -545,7 +625,7 @@ document.addEventListener('keydown', event => {
     switch (event.key) {
         case 'ArrowLeft': playerMove(-1); break;
         case 'ArrowRight': playerMove(1); break;
-        case 'ArrowDown': playerDrop(); break;
+        case 'ArrowDown': playerDrop(true); break;
         case 'ArrowUp': playerRotate(1); break;
         case ' ': event.preventDefault(); hardDrop(); break;
         case 'c': case 'C': holdPiece(); break;
@@ -565,15 +645,78 @@ function addControl(id, action) {
 }
 addControl('btn-left', () => playerMove(-1));
 addControl('btn-right', () => playerMove(1));
-addControl('btn-down', () => playerDrop());
+addControl('btn-down', () => playerDrop(true));
 addControl('btn-rotate', () => playerRotate(1));
 addControl('btn-drop', () => hardDrop());
 addControl('btn-hold', () => holdPiece());
 
-// Prevent scrolling ONLY when touching the game canvas directly
+// Swipe Gestures and Prevent Scrolling
 const canvasCont = document.getElementById('canvas-container');
 if (canvasCont) {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    const SWIPE_THRESHOLD = 30;
+    
+    canvasCont.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+        touchStartTime = new Date().getTime();
+    }, {passive: false});
+
     canvasCont.addEventListener('touchmove', (e) => {
         e.preventDefault();
     }, { passive: false });
+
+    canvasCont.addEventListener('touchend', (e) => {
+        if (isPaused || isGameOver) return;
+        const dx = e.changedTouches[0].screenX - touchStartX;
+        const dy = e.changedTouches[0].screenY - touchStartY;
+        const elapsedTime = new Date().getTime() - touchStartTime;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+            if (Math.abs(dx) > SWIPE_THRESHOLD) {
+                if (dx > 0) playerMove(1);
+                else playerMove(-1);
+            }
+        } else {
+            if (Math.abs(dy) > SWIPE_THRESHOLD) {
+                if (dy > 0) playerDrop(true);
+            } else if (Math.abs(dx) < 10 && Math.abs(dy) < 10 && elapsedTime < 300) {
+                playerRotate(1);
+            }
+        }
+    });
 }
+
+/* === PWA INSTALLATION === */
+const installBtn = document.getElementById('install-btn');
+let deferredPrompt;
+
+const isIos = () => {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  return /iphone|ipad|ipod/.test(userAgent);
+};
+const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+
+if (isIos() && !isInStandaloneMode() && installBtn) {
+    installBtn.classList.remove('hidden');
+    installBtn.addEventListener('click', () => {
+        alert("📲 لتثبيت اللعبة على أجهزة Apple:\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح.\n2. اختر 'إضافة للشاشة الرئيسية' (Add to Home Screen).");
+    });
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installBtn) {
+        installBtn.classList.remove('hidden');
+        installBtn.onclick = async () => {
+            installBtn.classList.add('hidden');
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`Install prompt outcome: ${outcome}`);
+            deferredPrompt = null;
+        };
+    }
+});
