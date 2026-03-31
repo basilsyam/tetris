@@ -36,8 +36,8 @@
         </div>
 
         <button id="main-start-btn" class="glow-on-hover btn-large">بدء اللعب</button>
-        <button id="instructions-btn" class="glow-on-hover" style="margin-top: 15px; font-size: 1rem; padding: 10px; opacity: 0.9;">📖 كيف تلعب؟</button>
         <button id="install-btn" class="glow-on-hover hidden" style="margin-top: 15px; font-size: 1rem; padding: 10px; background: var(--text-highlight); color: var(--bg-gradient); opacity: 0.9;">📲 تثبيت اللعبة</button>
+        <button id="instructions-btn" class="glow-on-hover inst-action" style="margin-top: 15px; font-size: 1rem; padding: 10px; opacity: 0.9;">📖 كيف تلعب؟</button>
     </div>
 
     <!-- Instructions / First Time Popup -->
@@ -87,12 +87,18 @@
                     <span id="lines">0</span>
                 </div>
                 <button id="pause-btn" class="glow-on-hover pause-action" style="margin-top: 20px;">⏸️ إيقاف (P)</button>
+                <button id="desktop-restart-btn" class="glow-on-hover restart-action" style="margin-top: 10px;">🔄 إعادة اللعب</button>
+                <button id="desktop-inst-btn" class="glow-on-hover inst-action" style="margin-top: 10px;">📖 التعليمات</button>
             </div>
             
             <div class="center-panel">
                 <div class="mobile-top-bar">
-                    <span class="mobile-score">🎯 النقاط: <span id="m-score">0</span></span>
-                    <button id="m-pause-btn" class="icon-btn pause-action">⏸️</button>
+                    <span class="mobile-score">🎯 <span id="m-score">0</span></span>
+                    <div style="display: flex; gap: 5px;">
+                        <button id="m-inst-btn" class="icon-btn inst-action">📖</button>
+                        <button id="m-restart-btn" class="icon-btn restart-action">🔄</button>
+                        <button id="m-pause-btn" class="icon-btn pause-action">⏸️</button>
+                    </div>
                 </div>
 
                 <div class="canvas-container" id="canvas-container">

@@ -593,6 +593,18 @@ function startGame() {
 }
 
 /* === EVENT LISTENERS === */
+const instScreen = document.getElementById('instructions-screen');
+document.querySelectorAll('.inst-action').forEach(b => b.addEventListener('click', () => {
+    if (!isPaused && !isGameOver && startScreen.classList.contains('hidden')) {
+        togglePause();
+    }
+    instScreen.classList.remove('hidden');
+}));
+document.getElementById('close-instructions-btn').addEventListener('click', () => {
+    instScreen.classList.add('hidden');
+});
+document.querySelectorAll('.restart-action').forEach(b => b.addEventListener('click', startGame));
+
 mainStartBtn.addEventListener('click', startGame);
 restartBtn.addEventListener('click', startGame);
 resumeBtn.addEventListener('click', togglePause);
@@ -623,6 +635,7 @@ document.addEventListener('keydown', event => {
     if (isPaused) return;
     
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(event.key)) {
+        if (event.key === ' ' && event.repeat) return;
         event.preventDefault();
     }
     
@@ -644,12 +657,16 @@ function addControl(id, action) {
     const handler = (e) => {
         if (e.cancelable) e.preventDefault();
         const now = Date.now();
-        if (now - lastFire < 50) return; // Prevent double trigger
+        if (now - lastFire < 200) return; // Prevent ghost clicks
         lastFire = now;
         if(!isPaused && !isGameOver) action();
     };
-    btn.addEventListener('touchstart', handler, {passive: false});
-    btn.addEventListener('mousedown', handler);
+    if (window.PointerEvent) {
+        btn.addEventListener('pointerdown', handler);
+    } else {
+        btn.addEventListener('touchstart', handler, {passive: false});
+        btn.addEventListener('mousedown', handler);
+    }
 }
 addControl('btn-left', () => playerMove(-1));
 addControl('btn-right', () => playerMove(1));
