@@ -699,7 +699,10 @@ const isIos = () => {
 };
 const isInStandaloneMode = () => ('standalone' in window.navigator) && window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
 
-if (installBtn) {
+// إظهار الزر دائماً إذا لم نكن في وضع التطبيق
+if (installBtn && !isInStandaloneMode()) {
+    installBtn.classList.remove('hidden');
+    
     installBtn.onclick = async () => {
         if (deferredPrompt) {
             // إظهار نافذة التثبيت المباشرة الخاصة بالمتصفح
@@ -707,9 +710,13 @@ if (installBtn) {
             const { outcome } = await deferredPrompt.userChoice;
             console.log(`Install prompt outcome: ${outcome}`);
             deferredPrompt = null;
-            installBtn.classList.add('hidden'); // إخفاء الزر بعد التثبيت
-        } else if (isIos() && !isInStandaloneMode()) {
-            alert("🍏 في أجهزة أبل (iOS):\nاضغط على أيقونة المشاركة (Share) في متصفح سفاري، ثم اختر 'إضافة للشاشة الرئيسية' (Add to Home Screen).");
+            if (outcome === 'accepted') {
+                installBtn.classList.add('hidden'); // إخفاء الزر بعد التثبيت
+            }
+        } else if (isIos()) {
+            alert("🍏 في أجهزة أبل (iOS):\nاضغط على أيقونة المشاركة (Share) أسفل المتصفح، ثم اختر 'إضافة للشاشة الرئيسية' (Add to Home Screen).");
+        } else {
+            alert("🤖 لتثبيت اللعبة:\nاضغط على القائمة (الثلاث نقاط) في قائمة المتصفح، ثم اختر 'تثبيت التطبيق' (Install App) أو 'الإضافة للشاشة الرئيسية' (Add to Home Screen).");
         }
     };
 }
@@ -719,14 +726,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     // تخزين الحدث عشان نستخدمه لما يضغط المستخدم على زر "تثبيت"
     deferredPrompt = e;
-    // إظهار الزر فقط عندما تعطينا البيئة الصلاحية لإظهار النافذة المباشرة (مثل وجود HTTPS)
-    if (installBtn && !isInStandaloneMode()) {
-        installBtn.classList.remove('hidden');
-    }
 });
 
-// إذا كان النظام iOS، نظهر الزر لأن سفاري لا يدعم beforeinstallprompt
-// ونعتمد على التنبيه المخصص لآبل عند الضغط عليه
-if (isIos() && !isInStandaloneMode() && installBtn) {
-    installBtn.classList.remove('hidden');
-}
+// التعامل مع حدث التثبيت الناجح لإخفاء الزر
+window.addEventListener('appinstalled', () => {
+    if (installBtn) installBtn.classList.add('hidden');
+    deferredPrompt = null;
+    console.log('PWA was installed');
+});
