@@ -313,6 +313,12 @@ canvas { display: block; }
 }
 .glow-on-hover:active { transform: scale(0.95); }
 
+.panel-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
 .right-panel h2 {
     font-size: 1.2rem;
     margin-bottom: 10px;
@@ -391,47 +397,107 @@ canvas { display: block; }
 }
 
 @media (max-width: 900px) {
-    body {
-        padding: 5px;
+    body, html {
+        padding: 0;
+        margin: 0;
         align-items: center;
-        overflow-y: auto;
+        overflow: hidden; /* Prevent scrolling absolutely */
+        height: 100vh;
+        width: 100vw;
+    }
+    .game-wrapper {
+        align-items: flex-start;
+        padding: 5px;
+        height: 100vh;
+        width: 100vw;
     }
     .game-container {
         flex-direction: column;
         align-items: center;
+        justify-content: space-between;
         width: 100%;
-        gap: 15px;
+        height: 100%;
+        gap: 5px;
+        max-width: 500px;
     }
-    .glass-panel { width: 100%; max-width: 400px; padding: 15px; }
+    .glass-panel { width: 100%; padding: 5px; }
     
-    .left-panel { display: none; } /* Hide left panel, use top bar instead */
+    .left-panel { display: none; }
+    
+    .center-panel { 
+        order: 1; 
+        width: 100%; 
+        flex: 1; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        min-height: 0; 
+    }
+    
+    .mobile-top-bar { 
+        display: flex !important; 
+        padding: 8px 15px; 
+        margin-bottom: 5px; 
+    }
+    
+    .canvas-container {
+        flex: 1;
+        height: auto;
+        min-height: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    canvas#tetris, canvas#particles {
+        height: 100%;
+        width: auto;
+        max-width: 100%;
+        aspect-ratio: 1 / 2;
+        object-fit: contain;
+    }
+    
+    .mobile-controls { 
+        display: flex !important; 
+        margin-top: 5px; 
+        padding: 8px; 
+        gap: 5px; 
+    }
+    .mobile-controls button {
+        padding: 8px;
+        font-size: 1.1rem;
+    }
     
     .right-panel {
         flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-around;
-        padding: 15px;
-        order: 3;
+        justify-content: center;
+        align-items: flex-end;
+        padding: 5px;
+        order: 0;
+        gap: 20px;
     }
-    .right-panel h2 { width: 100%; text-align: center; margin-bottom: 5px; }
-    .hold-piece-container, .queue-container { width: 45%; margin-bottom: 5px; }
+    .right-panel h2 { 
+        display: block;
+        font-size: 0.8rem;
+        margin: 0 0 2px 0;
+        opacity: 0.8;
+    }
+    .panel-section {
+        width: auto;
+    }
+    .hold-piece-container, .queue-container { 
+        width: 60px; 
+        height: 60px; 
+        margin: 0; 
+        padding: 2px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    canvas#hold-piece, canvas#next-queue {
+        height: 100% !important;
+        width: auto !important;
+    }
     .controls-guide { display: none; }
-    
-    .center-panel { order: 1; width: 100%; max-width: 400px; }
-    .mobile-controls { display: flex !important; }
-    .mobile-top-bar { display: flex !important; }
-    
-    .game-wrapper {
-        align-items: flex-start;
-        padding-top: 10px;
-    }
-    
-    canvas#tetris, canvas#particles {
-        width: 100%;
-        max-width: 400px;
-        height: auto;
-        aspect-ratio: 1 / 2;
-    }
 }
 
 /* ADDING VISUAL EFFECTS */

@@ -699,24 +699,21 @@ const isIos = () => {
 };
 const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
 
-if (isIos() && !isInStandaloneMode() && installBtn) {
-    installBtn.classList.remove('hidden');
-    installBtn.addEventListener('click', () => {
-        alert("📲 لتثبيت اللعبة على أجهزة Apple:\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح.\n2. اختر 'إضافة للشاشة الرئيسية' (Add to Home Screen).");
-    });
+if (installBtn && !isInStandaloneMode()) {
+    installBtn.classList.remove('hidden'); // Always visible if not installed
+    installBtn.onclick = async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`Install prompt outcome: ${outcome}`);
+            deferredPrompt = null;
+        } else {
+            alert("📲 لتثبيت اللعبة:\n1. في أجهزة أبل: اضغط على زر المشاركة (Share) ثم 'إضافة للشاشة الرئيسية'.\n2. في أندرويد/كروم: افتح القائمة (ثلاث نقاط) واختر 'تثبيت التطبيق' (Install App).");
+        }
+    };
 }
 
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    if (installBtn) {
-        installBtn.classList.remove('hidden');
-        installBtn.onclick = async () => {
-            installBtn.classList.add('hidden');
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log(`Install prompt outcome: ${outcome}`);
-            deferredPrompt = null;
-        };
-    }
 });
