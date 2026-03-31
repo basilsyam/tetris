@@ -714,6 +714,10 @@ if (installBtn && !isInStandaloneMode()) {
 }
 
 window.addEventListener('beforeinstallprompt', (e) => {
+    // منع المتصفح من إظهار النافذة التلقائية
     e.preventDefault();
+    // تخزين الحدث عشان نستخدمه لما يضغط المستخدم على زر "تثبيت"
     deferredPrompt = e;
+    // الآن نظهر الزر لأنه المتصفح أكد إن التطبيق قابل للتثبيت
+    if (installBtn) installBtn.classList.remove('hidden');
 });

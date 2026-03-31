@@ -11,12 +11,15 @@ if (-not (Test-Path -Path "d:\tetris\fonts")) {
     Write-Host "Created 'fonts' directory."
 }
 
-$Matches = [regex]::Matches($CssContent, 'url\((https://[^)]+)\)')
+# سطر 14
+$FontMatches = [regex]::Matches($CssContent, 'url\((https://[^)]+)\)')
+
 
 $i = 1
 $CacheList = @()
 
-foreach ($match in $Matches) {
+# سطر 19
+foreach ($match in $FontMatches) {
     if ($match.Groups[1].Value) {
         $fontUrl = $match.Groups[1].Value
         $ext = ".woff2"

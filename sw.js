@@ -1,27 +1,34 @@
-const CACHE_NAME = 'tetris-pro-v2';
-const urlsToCache = [
+const CACHE_NAME = 'tetris-pro-v2026';
+const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './style.css',
   './script.js',
   './manifest.json',
+  './fonts.css',
   './icon.svg',
-  './fonts.css'
+  // إضافة مجلد الخطوط الذي تم إنشاؤه بواسطة سكريبت الـ PowerShell
+  './fonts/cairo.woff2', 
+  './fonts/digital-7.woff'
 ];
 
-self.addEventListener('install', event => {
-  self.skipWaiting();
+// مرحلة التثبيت: حفظ كل الملفات في الذاكرة التخزينية (Cache)
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('Caching all assets for offline play...');
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
   );
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', event => {
+// مرحلة التفعيل: حذف الكاش القديم إذا وجد
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cache => {
+        cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
             return caches.delete(cache);
           }
@@ -29,27 +36,19 @@ self.addEventListener('activate', event => {
       );
     })
   );
+  self.clients.claim();
 });
 
-self.addEventListener('fetch', event => {
+// استراتيجية "Cache First": ابحث في الكاش أولاً، إذا لم يوجد اذهب للإنترنت
+self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) return response;
-        
-        return fetch(event.request).then(networkResponse => {
-          // Cache dynamically strictly for HTTP/HTTPS (like Google Fonts woff2)
-          if (networkResponse && networkResponse.status === 200 && event.request.url.startsWith('http')) {
-              const responseToCache = networkResponse.clone();
-              caches.open(CACHE_NAME).then(cache => {
-                  cache.put(event.request, responseToCache);
-              });
-          }
-          return networkResponse;
-        }).catch(() => {
-            // Offline fallback if fetch fails completely
-            console.log('You are offline and resource is not cached.');
-        });
-      })
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request).catch(() => {
+        // في حال فشل الإنترنت تماماً وعدم وجود الملف في الكاش
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
+      });
+    })
   );
 });
