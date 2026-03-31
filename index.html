@@ -36,7 +36,23 @@
         </div>
 
         <button id="main-start-btn" class="glow-on-hover btn-large">بدء اللعب</button>
-        <button id="install-btn" class="glow-on-hover hidden" style="margin-top: 15px; background: var(--text-highlight); color: var(--bg-gradient);">📲 تثبيت اللعبة</button>
+        <button id="instructions-btn" class="glow-on-hover" style="margin-top: 15px; font-size: 1rem; padding: 10px; opacity: 0.9;">📖 كيف تلعب؟</button>
+        <button id="install-btn" class="glow-on-hover hidden" style="margin-top: 15px; font-size: 1rem; padding: 10px; background: var(--text-highlight); color: var(--bg-gradient); opacity: 0.9;">📲 تثبيت اللعبة</button>
+    </div>
+
+    <!-- Instructions / First Time Popup -->
+    <div id="instructions-screen" class="overlay glass-panel hidden" style="z-index: 1000; max-height: 90vh;">
+        <h2 style="color: var(--text-highlight); margin-bottom: 20px; font-size: 1.8rem;">كيف تلعب؟ 🎮</h2>
+        <div style="text-align: right; line-height: 1.8; margin-bottom: 20px; font-size: 1.1rem; overflow-y: auto; padding-right: 10px;">
+            <p>⬅️ ➡️ <b>تحريك:</b> للتحريك يميناً ويساراً</p>
+            <p>⬆️ أو 🔄 <b>تدوير:</b> لتدوير القطعة</p>
+            <p>⬇️ <b>تسريع:</b> لنزول القطعة أسرع</p>
+            <p>🪂 <b>المسافة:</b> لإسقاطها فوراً لأسفل</p>
+            <p>📦 <b>حفظ (C):</b> للاحتفاظ بقطعة لاستخدامها لاحقاً</p>
+            <hr style="border: 1px solid var(--glass-border); margin: 15px 0;">
+            <p style="font-size: 0.95rem; color: #fff; opacity: 0.9;">✨ <b>الهدف:</b> أكمل وتراً أفقياً لتفجيره وكسب النقاط، كلما زادت نقاطك سارعت اللعبة أكثر!</p>
+        </div>
+        <button id="close-instructions-btn" class="glow-on-hover btn-large" style="margin-top: auto;">حسناً، فلنبدأ! 🚀</button>
     </div>
 
     <!-- Pause / Game Over Screen -->
