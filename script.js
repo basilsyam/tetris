@@ -622,12 +622,16 @@ document.addEventListener('keydown', event => {
     }
     if (isPaused) return;
     
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(event.key)) {
+        event.preventDefault();
+    }
+    
     switch (event.key) {
         case 'ArrowLeft': playerMove(-1); break;
         case 'ArrowRight': playerMove(1); break;
         case 'ArrowDown': playerDrop(true); break;
         case 'ArrowUp': playerRotate(1); break;
-        case ' ': event.preventDefault(); hardDrop(); break;
+        case ' ': hardDrop(); break;
         case 'c': case 'C': holdPiece(); break;
     }
 });
@@ -636,8 +640,12 @@ document.addEventListener('keydown', event => {
 function addControl(id, action) {
     const btn = document.getElementById(id);
     if (!btn) return;
+    let lastFire = 0;
     const handler = (e) => {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
+        const now = Date.now();
+        if (now - lastFire < 50) return; // Prevent double trigger
+        lastFire = now;
         if(!isPaused && !isGameOver) action();
     };
     btn.addEventListener('touchstart', handler, {passive: false});
@@ -699,36 +707,40 @@ const isIos = () => {
 };
 const isInStandaloneMode = () => ('standalone' in window.navigator) && window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
 
-// إظهار الزر دائماً إذا لم نكن في وضع التطبيق
-if (installBtn && !isInStandaloneMode()) {
-    installBtn.classList.remove('hidden');
+if (installBtn) {
+    // Show instantly only on iOS since it does not support beforeinstallprompt natively
+    if (isIos() && !isInStandaloneMode()) {
+        installBtn.classList.remove('hidden');
+    }
     
     installBtn.onclick = async () => {
         if (deferredPrompt) {
-            // إظهار نافذة التثبيت المباشرة الخاصة بالمتصفح
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             console.log(`Install prompt outcome: ${outcome}`);
             deferredPrompt = null;
             if (outcome === 'accepted') {
-                installBtn.classList.add('hidden'); // إخفاء الزر بعد التثبيت
+                installBtn.classList.add('hidden');
             }
         } else if (isIos()) {
             alert("🍏 في أجهزة أبل (iOS):\nاضغط على أيقونة المشاركة (Share) أسفل المتصفح، ثم اختر 'إضافة للشاشة الرئيسية' (Add to Home Screen).");
         } else {
-            alert("🤖 لتثبيت اللعبة:\nاضغط على القائمة (الثلاث نقاط) في قائمة المتصفح، ثم اختر 'تثبيت التطبيق' (Install App) أو 'الإضافة للشاشة الرئيسية' (Add to Home Screen).");
+            alert("تلميح: لتمكين التحميل المباشر، يرجى الضغط على أيقونة (التثبيت ⬇️) الموجودة في شريط عنوان المتصفح بالأعلى 👆.");
         }
     };
 }
 
 window.addEventListener('beforeinstallprompt', (e) => {
-    // منع المتصفح من إظهار النافذة التلقائية
+    // Prevent default browser popup
     e.preventDefault();
-    // تخزين الحدث عشان نستخدمه لما يضغط المستخدم على زر "تثبيت"
     deferredPrompt = e;
+    // Show button only when the prompt is fully ready
+    if (installBtn && !isInStandaloneMode()) {
+        installBtn.classList.remove('hidden');
+    }
 });
 
-// التعامل مع حدث التثبيت الناجح لإخفاء الزر
+// Hide button if successfully installed
 window.addEventListener('appinstalled', () => {
     if (installBtn) installBtn.classList.add('hidden');
     deferredPrompt = null;

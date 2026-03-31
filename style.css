@@ -12,7 +12,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: auto;
+    overflow: hidden;
     padding: 10px;
     transition: background 0.5s ease, color 0.5s ease;
     background: var(--bg-gradient);
@@ -103,7 +103,7 @@ body.theme-retro {
 .hidden { display: none !important; }
 
 .logo {
-    font-size: 3.5rem;
+    font-size: 2.5rem;
     margin-bottom: 5px;
     color: var(--text-highlight);
     text-shadow: 0 0 10px var(--text-highlight);
@@ -154,8 +154,8 @@ body.theme-retro {
 }
 
 .btn-large {
-    font-size: 1.5rem !important;
-    padding: 20px !important;
+    font-size: 1.2rem !important;
+    padding: 15px !important;
     margin-top: 10px;
 }
 .btn-danger {
@@ -196,16 +196,23 @@ body.theme-retro {
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
     border-radius: 15px;
-    padding: 20px;
+    padding: 15px;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     align-items: center;
     min-width: 200px;
+    max-height: 95vh;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+.glass-panel::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
 }
 
 .panel-header {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: bold;
     margin-bottom: 20px;
     color: var(--text-highlight);
@@ -234,7 +241,7 @@ body.theme-retro {
 }
 
 .info-box span {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: bold;
 }
 
@@ -277,6 +284,27 @@ body.theme-retro {
 }
 
 canvas { display: block; }
+
+canvas#tetris, canvas#particles {
+    max-height: calc(100vh - 150px);
+    width: auto;
+    aspect-ratio: 1 / 2;
+    object-fit: contain;
+}
+
+canvas#next-queue {
+    max-height: auto; 
+    height: 25vh; /* Dynamically restrict the height */
+    width: auto;
+    object-fit: contain;
+}
+
+canvas#hold-piece {
+    max-height: auto;
+    height: 10vh;
+    width: auto;
+    object-fit: contain;
+}
 
 .next-piece-container {
     background: var(--panel-bg);
@@ -333,8 +361,8 @@ canvas { display: block; }
     width: 100%;
 }
 .controls-guide p {
-    margin: 8px 0;
-    font-size: 0.9rem;
+    margin: 5px 0;
+    font-size: 0.85rem;
     text-align: right;
     opacity: 0.8;
 }
@@ -360,7 +388,7 @@ canvas { display: block; }
     background: var(--mobile-btn-bg);
     border: 1px solid var(--mobile-btn-border);
     color: inherit;
-    font-size: 1.1rem;
+    font-size: 1rem;
     padding: 15px 10px;
     border-radius: 10px;
     flex: 1;
