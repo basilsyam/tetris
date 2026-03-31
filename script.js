@@ -695,20 +695,21 @@ let deferredPrompt;
 
 const isIos = () => {
   const userAgent = window.navigator.userAgent.toLowerCase();
-  return /iphone|ipad|ipod/.test(userAgent);
+  return /iphone|ipad|ipod|macintosh/.test(userAgent) && 'ontouchend' in document;
 };
-const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+const isInStandaloneMode = () => ('standalone' in window.navigator) && window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
 
-if (installBtn && !isInStandaloneMode()) {
-    installBtn.classList.remove('hidden'); // Always visible if not installed
+if (installBtn) {
     installBtn.onclick = async () => {
         if (deferredPrompt) {
+            // إظهار نافذة التثبيت المباشرة الخاصة بالمتصفح
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             console.log(`Install prompt outcome: ${outcome}`);
             deferredPrompt = null;
-        } else {
-            alert("📲 لتثبيت اللعبة:\n1. في أجهزة أبل: اضغط على زر المشاركة (Share) ثم 'إضافة للشاشة الرئيسية'.\n2. في أندرويد/كروم: افتح القائمة (ثلاث نقاط) واختر 'تثبيت التطبيق' (Install App).");
+            installBtn.classList.add('hidden'); // إخفاء الزر بعد التثبيت
+        } else if (isIos() && !isInStandaloneMode()) {
+            alert("🍏 في أجهزة أبل (iOS):\nاضغط على أيقونة المشاركة (Share) في متصفح سفاري، ثم اختر 'إضافة للشاشة الرئيسية' (Add to Home Screen).");
         }
     };
 }
@@ -718,6 +719,14 @@ window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     // تخزين الحدث عشان نستخدمه لما يضغط المستخدم على زر "تثبيت"
     deferredPrompt = e;
-    // الآن نظهر الزر لأنه المتصفح أكد إن التطبيق قابل للتثبيت
-    if (installBtn) installBtn.classList.remove('hidden');
+    // إظهار الزر فقط عندما تعطينا البيئة الصلاحية لإظهار النافذة المباشرة (مثل وجود HTTPS)
+    if (installBtn && !isInStandaloneMode()) {
+        installBtn.classList.remove('hidden');
+    }
 });
+
+// إذا كان النظام iOS، نظهر الزر لأن سفاري لا يدعم beforeinstallprompt
+// ونعتمد على التنبيه المخصص لآبل عند الضغط عليه
+if (isIos() && !isInStandaloneMode() && installBtn) {
+    installBtn.classList.remove('hidden');
+}
