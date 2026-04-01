@@ -140,6 +140,7 @@ let dropInterval = 1000;
 let lockDelayCounter = 0; // NEW: Lock Delay State
 const LOCK_DELAY = 500;   // NEW: Lock Delay Duration ms
 let lastTime = 0;
+let lastSpawnTime = 0;
 let animationId = null;
 let isGameOver = false;
 let isPaused = true;
@@ -297,6 +298,7 @@ function playerReset() {
     player.pos.y = 0;
     player.pos.x = Math.floor(COLS / 2) - Math.floor(player.matrix[0].length / 2);
     canHold = true;
+    lastSpawnTime = Date.now();
     
     if (collide(board, player)) {
         triggerGameOver();
@@ -383,6 +385,7 @@ function playerDrop(isSoftDrop = false) {
 
 function hardDrop() {
     if (isPaused || isGameOver) return;
+    if (Date.now() - lastSpawnTime < 150) return; // Prevent double hard-drop instantly
     let distance = 0;
     while (!collide(board, player)) {
         player.pos.y++;
@@ -650,30 +653,56 @@ document.addEventListener('keydown', event => {
 });
 
 /* Mobile Controls */
-function addControl(id, action) {
+function addControl(id, action, isContinuous = false) {
     const btn = document.getElementById(id);
     if (!btn) return;
-    let lastFire = 0;
-    const handler = (e) => {
-        if (e.cancelable) e.preventDefault();
-        const now = Date.now();
-        if (now - lastFire < 200) return; // Prevent ghost clicks
-        lastFire = now;
-        if(!isPaused && !isGameOver) action();
+    
+    let isPressed = false;
+    let initialTimer = null;
+    let repeatTimer = null;
+
+    const startAction = (e) => {
+        if (e && e.cancelable) e.preventDefault();
+        if (isPaused || isGameOver || isPressed) return;
+        isPressed = true;
+        action();
+        
+        if (isContinuous) {
+            initialTimer = setTimeout(() => {
+                repeatTimer = setInterval(() => {
+                    if (!isPaused && !isGameOver) action();
+                }, 50);
+            }, 200);
+        }
     };
+
+    const stopAction = (e) => {
+        if (e && e.cancelable) e.preventDefault();
+        isPressed = false;
+        if (initialTimer) clearTimeout(initialTimer);
+        if (repeatTimer) clearInterval(repeatTimer);
+    };
+
     if (window.PointerEvent) {
-        btn.addEventListener('pointerdown', handler);
+        btn.addEventListener('pointerdown', startAction);
+        btn.addEventListener('pointerup', stopAction);
+        btn.addEventListener('pointerleave', stopAction);
+        btn.addEventListener('pointercancel', stopAction);
     } else {
-        btn.addEventListener('touchstart', handler, {passive: false});
-        btn.addEventListener('mousedown', handler);
+        btn.addEventListener('touchstart', startAction, {passive: false});
+        btn.addEventListener('touchend', stopAction);
+        btn.addEventListener('touchcancel', stopAction);
+        btn.addEventListener('mousedown', startAction);
+        btn.addEventListener('mouseup', stopAction);
+        btn.addEventListener('mouseleave', stopAction);
     }
 }
-addControl('btn-left', () => playerMove(-1));
-addControl('btn-right', () => playerMove(1));
-addControl('btn-down', () => playerDrop(true));
-addControl('btn-rotate', () => playerRotate(1));
-addControl('btn-drop', () => hardDrop());
-addControl('btn-hold', () => holdPiece());
+addControl('btn-left', () => playerMove(-1), true);
+addControl('btn-right', () => playerMove(1), true);
+addControl('btn-down', () => playerDrop(true), true);
+addControl('btn-rotate', () => playerRotate(1), false);
+addControl('btn-drop', () => hardDrop(), false);
+addControl('btn-hold', () => holdPiece(), false);
 
 // Swipe Gestures and Prevent Scrolling
 const canvasCont = document.getElementById('canvas-container');
@@ -706,7 +735,7 @@ if (canvasCont) {
             }
         } else {
             if (Math.abs(dy) > SWIPE_THRESHOLD) {
-                if (dy > 0) playerDrop(true);
+                if (dy > 0) hardDrop();
             } else if (Math.abs(dx) < 10 && Math.abs(dy) < 10 && elapsedTime < 300) {
                 playerRotate(1);
             }
@@ -756,6 +785,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
         installBtn.classList.remove('hidden');
     }
 });
+
 
 // Hide button if successfully installed
 window.addEventListener('appinstalled', () => {
